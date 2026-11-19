@@ -6,7 +6,9 @@ test "$(uname -m)" = "x86_64"
 lilypond --version | grep -F "GNU LilyPond ${LILYPOND_VERSION:-2.26.0}"
 test -f "${SOUNDFONT:-/opt/soundfonts/MS_Basic.sf3}"
 test "$(head -c 4 "${SOUNDFONT:-/opt/soundfonts/MS_Basic.sf3}")" = "RIFF"
-test -s /usr/share/doc/lilypond-ci-image/MS_Basic_License.md
+test -s /usr/share/doc/lilypond-ci-image/licenses/MS_Basic_License.md
+test -s /usr/share/doc/lilypond-ci-image/licenses/LilyPond-LICENSE
+test -s /usr/share/doc/lilypond-ci-image/licenses/LilyPond-COPYING
 test -s /usr/share/doc/lilypond-ci-image/THIRD_PARTY_NOTICES.md
 test -s /usr/share/doc/lilypond-ci-image/installed-packages.tsv
 command -v gh >/dev/null
