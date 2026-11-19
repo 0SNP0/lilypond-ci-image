@@ -18,7 +18,7 @@ permissions:
 
 concurrency:
   group: lilypond-ci-image-release
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build-test-publish:
