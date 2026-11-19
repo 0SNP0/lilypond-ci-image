@@ -1,0 +1,11 @@
+.git
+.github
+README.md
+**/__pycache__
+**/*.pyc
+!LICENSE
+!THIRD_PARTY_NOTICES.md
+!licenses
+!licenses/**
+!scripts
+!scripts/**
