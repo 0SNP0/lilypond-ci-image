@@ -30,6 +30,26 @@ The published image is intended to be consumed by its **immutable image
 digest**, not by `:latest`. Changing a dependency requires an explicit
 image rebuild and then updating the digest in downstream CI.
 
+Once the workflow has succeeded and GHCR visibility is Public, copy the
+`ghcr.io/…@sha256:…` reference from the run's summary:
+
+```yaml
+jobs:
+  example:
+    runs-on: ubuntu-24.04
+    container:
+      image: ghcr.io/0snp0/lilypond-ci-image@sha256:REPLACE_WITH_PUBLISHED_DIGEST
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+      - run: ci-image-smoke-test
+```
+
+Use the same digest for both the PDF and audio jobs. No build-system or
+score-project URL needs to be encoded in this image.
+
 Public access to a newly created GHCR package may need to be enabled
 separately under the package's settings.
 
