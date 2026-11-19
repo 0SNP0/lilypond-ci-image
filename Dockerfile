@@ -48,10 +48,11 @@ RUN set -eux; \
     test "$(stat -c %s "${SOUNDFONT}")" -gt 50000000; \
     test "$(head -c 4 "${SOUNDFONT}")" = "RIFF"; \
     sha256sum "${SOUNDFONT}" > /usr/share/doc/lilypond-ci-image/MS_Basic.sha256; \
+    ffmpeg -buildconf > /usr/share/doc/lilypond-ci-image/ffmpeg-buildconf.txt; \
     fc-cache -f
 
 COPY LICENSE THIRD_PARTY_NOTICES.md /usr/share/doc/lilypond-ci-image/
-COPY licenses/MS_Basic_License.md /usr/share/doc/lilypond-ci-image/MS_Basic_License.md
+COPY licenses/ /usr/share/doc/lilypond-ci-image/licenses/
 COPY scripts/ci-image-smoke-test /usr/local/bin/ci-image-smoke-test
 
 RUN chmod 0755 /usr/local/bin/ci-image-smoke-test; \
