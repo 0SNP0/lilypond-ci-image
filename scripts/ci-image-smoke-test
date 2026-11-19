@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Verify the same binaries used by downstream PDF and media jobs.
+set -euo pipefail
+
+test "$(uname -m)" = "x86_64"
+lilypond --version | grep -F "GNU LilyPond ${LILYPOND_VERSION:-2.26.0}"
+test -f "${SOUNDFONT:-/opt/soundfonts/MS_Basic.sf3}"
+test "$(head -c 4 "${SOUNDFONT:-/opt/soundfonts/MS_Basic.sf3}")" = "RIFF"
+test -s /usr/share/doc/lilypond-ci-image/MS_Basic_License.md
+test -s /usr/share/doc/lilypond-ci-image/THIRD_PARTY_NOTICES.md
+test -s /usr/share/doc/lilypond-ci-image/installed-packages.tsv
+command -v gh >/dev/null
+command -v git >/dev/null
+command -v ffmpeg >/dev/null
+command -v fluidsynth >/dev/null
+fc-match "TeX Gyre Termes" | grep -qi "texgyre"
+
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+cat > "$tmp/smoke.ly" <<'LILYPOND'
+\version "2.26.0"
+\header { tagline = ##f }
+\score {
+  \relative c' { \time 3/4 c4 d4 e4 | }
+  \layout { }
+  \midi { }
+}
+LILYPOND
+lilypond -dno-point-and-click -o "$tmp/smoke" "$tmp/smoke.ly"
+test -s "$tmp/smoke.pdf"
+test -s "$tmp/smoke.midi"
+
+python3 - "$tmp/smoke.pdf" <<'PY'
+import sys
+from pypdf import PdfReader
+assert len(PdfReader(sys.argv[1]).pages) == 1
+print("PDF output and pypdf: OK")
+PY
+
+# Render a real MIDI with the vendored soundfont and encode a real MP3.
+fluidsynth -ni -g 0.3 -F "$tmp/smoke.wav" -r 22050 \
+  "${SOUNDFONT:-/opt/soundfonts/MS_Basic.sf3}" "$tmp/smoke.midi"
+test -s "$tmp/smoke.wav"
+ffmpeg -hide_banner -loglevel error -y -i "$tmp/smoke.wav" \
+  -codec:a libmp3lame -qscale:a 6 "$tmp/smoke.mp3"
+test -s "$tmp/smoke.mp3"
+ffprobe -v error -show_entries format=duration -of default=nw=1 "$tmp/smoke.mp3"
+
+echo "PASS: LilyPond PDF/MIDI, pypdf, Fontconfig, FluidSynth, FFmpeg/MP3, licenses"
